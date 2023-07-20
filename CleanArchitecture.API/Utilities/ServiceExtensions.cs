@@ -7,7 +7,6 @@ using CleanArchitecture.Application.Services.Implementations;
 using CleanArchitecture.Application.Services.Interfaces;
 using CleanArchitecture.Infrastructure.IdentityServices;
 using CleanArchitecture.Infrastructure.Repositories;
-using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -15,6 +14,8 @@ using CleanArchitecture.API.Utilities.Exceptions;
 using CleanArchitecture.API.Utilities.Api;
 using System.Security.Claims;
 using System.Net;
+using CleanArchitecture.Application.CQRS.ProductFiles.Commands;
+using CleanArchitecture.API.Mapping;
 
 namespace CleanArchitecture.API.Utilities
 {
@@ -110,9 +111,14 @@ namespace CleanArchitecture.API.Utilities
                 .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddMediatR(configuration => configuration.RegisterServicesFromAssemblyContaining(typeof(CreateProductCommand)));
+
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
             services.AddScoped(typeof(IBaseService<>), typeof(BaseService<>));
+            services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IJwtService, JwtService>();
+
+            services.RegisterMapsterConfiguration();
 
             // Start Registering and Initializing AutoMapper
             //var mapperConfig = new MapperConfiguration(mc =>
