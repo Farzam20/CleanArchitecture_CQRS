@@ -35,6 +35,10 @@ namespace CleanArchitecture.API.Utilities
 
             services.AddEndpointsApiExplorer();
 
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddDefaultTokenProviders()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
             var _jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
             services.AddSingleton(_jwtSettings);
 
@@ -106,10 +110,6 @@ namespace CleanArchitecture.API.Utilities
                     }
                 };
             });
-
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddDefaultTokenProviders()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddMediatR(configuration => configuration.RegisterServicesFromAssemblyContaining(typeof(CreateProductCommand)));
 
