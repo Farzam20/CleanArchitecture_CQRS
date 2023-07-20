@@ -22,7 +22,7 @@ var app = builder.Build();
 var dbContext = builder.Services.BuildServiceProvider().GetRequiredService<ApplicationDbContext>();
 var userManager = builder.Services.BuildServiceProvider().GetRequiredService<UserManager<IdentityUser>>();
 var roleManager = builder.Services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
-DataInitializer.Initialize(dbContext, userManager, roleManager, app.Configuration);
+//DataInitializer.Initialize(dbContext, userManager, roleManager, app.Configuration);
 
 // Configure the HTTP request pipeline.
 
