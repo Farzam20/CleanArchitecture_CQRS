@@ -3,9 +3,13 @@ using CleanArchitecture.API.Utilities.Filters;
 using CleanArchitecture.Application.CQRS.ProductFiles.Commands;
 using CleanArchitecture.Application.CQRS.ProductFiles.Queries;
 using CleanArchitecture.Application.Dtos;
+using CleanArchitecture.Application.Dtos.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace CleanArchitecture.API.Controllers
 {
@@ -15,10 +19,12 @@ namespace CleanArchitecture.API.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IValidator<ProductCreateDto> _validator;
 
-        public ProductsController(IMediator mediator)
+        public ProductsController(IMediator mediator, IValidator<ProductCreateDto> validator)
         {
             _mediator = mediator;
+            _validator = validator;
         }
 
         [HttpGet("GetAll")]
@@ -49,7 +55,15 @@ namespace CleanArchitecture.API.Controllers
         [Authorize]
         public async Task<ActionResult<ProductDisplayDto>> Post(ProductCreateDto model)
         {
-            var command = new CreateProductCommand(model);
+            var result = await _validator.ValidateAsync(model);
+
+            if (!result.IsValid)
+            {
+                result.AddToModelState(ModelState);
+                return BadRequest(ModelState); 
+            }
+
+                var command = new CreateProductCommand(model, User.Identity.GetUserName());
             var handlerResponse = await _mediator.Send(command);
 
             if (handlerResponse.Status)
@@ -62,6 +76,14 @@ namespace CleanArchitecture.API.Controllers
         [Authorize]
         public async Task<ActionResult<ProductDisplayDto>> Put(ProductCreateDto model)
         {
+            var result = await _validator.ValidateAsync(model);
+
+            if (!result.IsValid)
+            {
+                result.AddToModelState(ModelState);
+                return BadRequest(ModelState);
+            }
+
             var command = new UpdateProductCommand(model, User.Identity.GetUserId());
             var handlerResponse = await _mediator.Send(command);
 

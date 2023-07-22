@@ -16,6 +16,8 @@ using System.Security.Claims;
 using System.Net;
 using CleanArchitecture.Application.CQRS.ProductFiles.Commands;
 using CleanArchitecture.API.Mapping;
+using FluentValidation;
+using CleanArchitecture.Application.Dtos.Validators;
 
 namespace CleanArchitecture.API.Utilities
 {
@@ -35,7 +37,14 @@ namespace CleanArchitecture.API.Utilities
 
             services.AddEndpointsApiExplorer();
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentity<IdentityUser, IdentityRole>(identityOptions =>
+                {
+                    identityOptions.Password.RequireDigit = true;
+                    identityOptions.Password.RequiredLength = 6;
+                    identityOptions.Password.RequireNonAlphanumeric = false;
+                    identityOptions.Password.RequireUppercase = false;
+                    identityOptions.Password.RequireLowercase = false;
+                })
                 .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -118,16 +127,9 @@ namespace CleanArchitecture.API.Utilities
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IJwtService, JwtService>();
 
-            services.RegisterMapsterConfiguration();
+            services.AddValidatorsFromAssemblyContaining<ProductCreateDtoValidator>();
 
-            // Start Registering and Initializing AutoMapper
-            //var mapperConfig = new MapperConfiguration(mc =>
-            //{
-            //    mc.AddProfile(new MappingProfile());
-            //});
-            //IMapper mapper = mapperConfig.CreateMapper();
-            //services.AddSingleton(mapper);
-            // End Registering and Initializing AutoMapper
+            services.RegisterMapsterConfiguration();
 
             services.AddHttpContextAccessor();
             services.AddCors();

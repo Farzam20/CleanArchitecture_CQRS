@@ -18,15 +18,19 @@ namespace CleanArchitecture.Application.CQRS.ProductFiles.Handlers
 
         public async Task<HandlerResponse<ProductDisplayDto>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var product = request.Product.Adapt<Product>();
+            var obj = await _productService.GetByIdAsync(cancellationToken, request.Product.Id);
 
-            if (!(await _productService.ProductIsUnique(product)))
+            if (obj == null)
+                return new(false, "محصول مورد نظر یافت نشد", null);
+
+            if (!(await _productService.ProductIsUnique(obj)))
                 return new(false, "محصول وارد شده تکراری می باشد", null);
 
-            if (product.CreatedByUserId != request.CurrentUserId)
+            if (obj.CreatedByUserId != request.CurrentUserId)
                 return new(false, "امکان ویرایش این محصول توسط شما وجود ندارد", null);
 
-            var result = await _productService.UpdateAsync(product, cancellationToken);
+            request.Product.Adapt(obj);
+            var result = await _productService.UpdateAsync(obj, cancellationToken);
             return result.Adapt<ProductDisplayDto>();
         }
     }
