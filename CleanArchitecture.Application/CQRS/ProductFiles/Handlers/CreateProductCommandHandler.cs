@@ -19,6 +19,7 @@ namespace CleanArchitecture.Application.CQRS.ProductFiles.Handlers
         public async Task<HandlerResponse<ProductDisplayDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
             var product = request.Product.Adapt<Product>();
+            product.CreatedByUserId = request.CurrentUserId;
 
             if (!(await _productService.ProductIsUnique(product)))
                 return new(false, "محصول وارد شده تکراری می باشد", null);

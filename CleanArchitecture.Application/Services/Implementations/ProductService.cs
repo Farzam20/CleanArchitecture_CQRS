@@ -42,7 +42,6 @@ namespace CleanArchitecture.Application.Services.Implementations
         public async Task<bool> ProductIsUnique(Product product)
         {
             return !(await _repository.TableNoTracking.AnyAsync(x => x.ProduceDate == product.ProduceDate && x.ManufactureEmail == product.ManufactureEmail && x.Id != product.Id));
-
         }
     }
 }

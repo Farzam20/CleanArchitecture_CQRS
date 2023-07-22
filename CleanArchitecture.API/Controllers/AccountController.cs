@@ -1,10 +1,13 @@
 ﻿using CleanArchitecture.API.Utilities.Filters;
 using CleanArchitecture.Application.Dtos;
 using CleanArchitecture.Application.Services.Interfaces;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 
 namespace CleanArchitecture.API.Controllers
 {
@@ -16,19 +19,31 @@ namespace CleanArchitecture.API.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IJwtService _jwtService;
+        private readonly IValidator<LoginDto> _loginValidator;
+        private readonly IValidator<RegisterDto> _registerValidator;
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IJwtService jwtService)
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IJwtService jwtService, IValidator<LoginDto> loginValidator, IValidator<RegisterDto> registerValidator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
+            _loginValidator = loginValidator;
+            _registerValidator = registerValidator;
         }
 
         [HttpPost("[action]")]
         public async Task<ActionResult> Register(RegisterDto model)
         {
-            if(!ModelState.IsValid)
+            //if(!ModelState.IsValid)
+            //    return BadRequest(ModelState);
+
+            var validationResult = await _registerValidator.ValidateAsync(model);
+
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState);
                 return BadRequest(ModelState);
+            }
 
             var user = model.Adapt<IdentityUser>();
             user.EmailConfirmed = true;
@@ -52,8 +67,13 @@ namespace CleanArchitecture.API.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult> Login(LoginDto model)
         {
-            if (!ModelState.IsValid)
+            var validationResult = await _loginValidator.ValidateAsync(model);
+
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState);
                 return BadRequest(ModelState);
+            }
 
             var user = await _userManager.FindByNameAsync(model.UserName);
             if (user == null)
@@ -79,7 +99,9 @@ namespace CleanArchitecture.API.Controllers
         [Authorize]
         public async Task<ActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            await _userManager.UpdateSecurityStampAsync(user);
+            await _signInManager.SignOutAsync();            
             return Ok();
         }
     }
