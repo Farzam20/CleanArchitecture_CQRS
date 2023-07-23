@@ -7,13 +7,13 @@ namespace CleanArchitecture.API.Utilities;
 
 public class DataInitializer
 {
-    internal static void Initialize(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+    internal static void Initialize(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         context.Database.Migrate();
-        InitData(context, userManager, roleManager, configuration);
+        InitData(context, userManager, roleManager);
     }
 
-    private static void InitData(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+    private static void InitData(ApplicationDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         roleManager.CreateAsync(new IdentityRole("Admin")).Wait();
         roleManager.CreateAsync(new IdentityRole("Guest")).Wait();
