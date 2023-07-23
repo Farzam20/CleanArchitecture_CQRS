@@ -60,10 +60,10 @@ namespace CleanArchitecture.API.Controllers
             if (!result.IsValid)
             {
                 result.AddToModelState(ModelState);
-                return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
-                var command = new CreateProductCommand(model, User.Identity.GetUserName());
+            var command = new CreateProductCommand(model, User.Identity.GetUserId());
             var handlerResponse = await _mediator.Send(command);
 
             if (handlerResponse.Status)
