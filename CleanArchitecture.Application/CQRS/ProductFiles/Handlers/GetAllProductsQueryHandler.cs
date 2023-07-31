@@ -18,13 +18,15 @@ namespace CleanArchitecture.Application.CQRS.ProductFiles.Handlers
 
         public async Task<HandlerResponse<List<ProductDisplayDto>>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
+            var baseQuery = _productService.GetAll().Include(x => x.CreatedByUser).AsQueryable();
+
             if (!string.IsNullOrEmpty(request.CreatedByUserId))
             {
-                return (await _productService.GetAll(x => x.CreatedByUserId == request.CreatedByUserId).Include(x => x.CreatedByUser).ToListAsync(cancellationToken))
+                return baseQuery.Where(x => x.CreatedByUserId == request.CreatedByUserId)
                     .Adapt<List<ProductDisplayDto>>();
             }
 
-            return (await _productService.GetAll().Include(x => x.CreatedByUser).ToListAsync(cancellationToken)).Adapt<List<ProductDisplayDto>>();
+            return baseQuery.Adapt<List<ProductDisplayDto>>();
         }
     }
 }
